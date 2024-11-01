@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Pharmacies on Call</title>
+</head>
+<body>
+    <h1>On-call Pharmacies</h1>
+    <ul>
+        {% for pharmacy in pharmacies %}
+            <li>
+                <strong>{{ pharmacy['name'] }}</strong><br>
+                Address: <a href="https://www.google.com/maps/search/?api=1&query={{ pharmacy['address'] }}" target="_blank">
+                    {{ pharmacy['address'] }}
+                </a><br>
+                Phone: {{ pharmacy['phone'] }}
+            </li>
+        {% endfor %}
+    </ul>
+    <a href="/">Back to Home</a>
+</body>
+</html>

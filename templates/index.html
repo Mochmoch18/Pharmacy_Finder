@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/styles.css">
+    <title>Pharmacy Finder</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+        <header>
+                <div class="container">
+                    <!-- Logo Section -->
+                    <div class="logo">
+                        <img src="/static/logo.png" alt="Logo" />
+                    </div>
+
+                    <!-- Navigation Links -->
+                    <nav class="nav-links">
+                        <a href="#home">Home</a>
+                        <a href="#contact">Contact</a>
+                        <a href="#search">Search</a>
+                    </nav>
+                </div>
+        </header>
+    <main>
+        <br>
+        <h3>Trouver votre Pharmacie de garde </h3>
+        <br>
+
+    <!-- City Dropdown -->
+    <label for="city">Select Ville:</label>
+    <select id="city" name="city">
+        <option value="">--Choose a City--</option>
+        {% for city in cities %}
+            <option value="{{ city }}">{{ city }}</option>
+        {% endfor %}
+    </select>
+
+    <!-- District Dropdown (populated based on selected city) -->
+    <label for="district">Select Quartier:</label>
+    <select id="district" name="district">
+        <option value="">--Choose a District--</option>
+    </select>
+
+    <!-- Button to filter pharmacies -->
+    <button id="filter-button">Search</button>
+    <br>
+
+
+<!-- Table to display pharmacies -->
+    <br>
+<table id="pharmacy-table" border="1">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Address</th>
+            <th>Phone</th>
+            <th>Garde Status</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+<script>
+    // Populate districts based on city selection
+    $('#city').change(function() {
+        const city = $(this).val();
+        $('#district').empty().append('<option value="">--Choose a District--</option>');
+        if (city) {
+            $.post('/get_districts', {city: city}, function(districts) {
+                districts.forEach(function(district) {
+                    $('#district').append(`<option value="${district}">${district}</option>`);
+                });
+            });
+        }
+    });
+
+    // Filter pharmacies based on city and district selection
+    $('#filter-button').click(function() {
+        const city = $('#city').val();
+        const district = $('#district').val();
+
+        $.post('/filter_pharmacies', {city: city, district: district}, function(pharmacies) {
+            $('#pharmacy-table tbody').empty();
+
+            // Check if there are any pharmacies returned
+            if (pharmacies.length > 0) {
+                $('#pharmacy-table').show(); // Show the table if there are results
+
+                pharmacies.forEach(function(pharmacy) {
+                    const address = encodeURIComponent(pharmacy.Address);  // URL-encode the address
+                    const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${address}`;
+
+                    $('#pharmacy-table tbody').append(`
+                        <tr>
+                            <td>${pharmacy.Name}</td>
+                            <td><a href="${googleMapsUrl}" target="_blank">${pharmacy.Address}</a></td>
+                            <td>${pharmacy.Phone}</td>
+                            <td>${pharmacy.Garde_Status}</td>
+                        </tr>
+                    `);
+                });
+            } else {
+                alert("No pharmacies found for the selected city and district."); // Optional alert if no results
+                $('#pharmacy-table').hide(); // Hide the table if no results
+            }
+        });
+    });
+</script>
+
+
+
+</main>
+
+</body>
+</html>
